@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Friday Night — Ayana</title>
+
+  <!-- Open Graph for rich link previews -->
+  <meta property="og:title" content="Friday Night" />
+  <meta property="og:description" content="You've got a date night card waiting ✨" />
+  <meta property="og:image" content="https://cards.johnbolt.me/friday-night/preview.png" />
+  <meta property="og:url" content="https://cards.johnbolt.me/friday-night" />
+  <meta property="og:type" content="website" />
+
+  <!-- Keep out of search engines -->
+  <meta name="robots" content="noindex, nofollow" />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #141210;
+      color: #ece5db;
+      font-family: 'Crimson Pro', Georgia, serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* subtle grain overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* ── ambient floating particles ── */
+
+    .ambient {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ambient span {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(196, 162, 101, 0.6), rgba(196, 162, 101, 0) 70%);
+      opacity: 0;
+      animation: float linear infinite;
+    }
+
+    .ambient span:nth-child(1)  { width: 4px;  height: 4px;  left: 12%; bottom: -10px; animation-duration: 18s; animation-delay: 0s; }
+    .ambient span:nth-child(2)  { width: 3px;  height: 3px;  left: 28%; bottom: -10px; animation-duration: 22s; animation-delay: -4s; }
+    .ambient span:nth-child(3)  { width: 5px;  height: 5px;  left: 45%; bottom: -10px; animation-duration: 16s; animation-delay: -8s; }
+    .ambient span:nth-child(4)  { width: 3px;  height: 3px;  left: 62%; bottom: -10px; animation-duration: 20s; animation-delay: -2s; }
+    .ambient span:nth-child(5)  { width: 4px;  height: 4px;  left: 78%; bottom: -10px; animation-duration: 24s; animation-delay: -12s; }
+    .ambient span:nth-child(6)  { width: 3px;  height: 3px;  left: 88%; bottom: -10px; animation-duration: 19s; animation-delay: -6s; }
+    .ambient span:nth-child(7)  { width: 5px;  height: 5px;  left: 35%; bottom: -10px; animation-duration: 21s; animation-delay: -14s; }
+    .ambient span:nth-child(8)  { width: 3px;  height: 3px;  left: 55%; bottom: -10px; animation-duration: 17s; animation-delay: -10s; }
+    .ambient span:nth-child(9)  { width: 4px;  height: 4px;  left: 5%;  bottom: -10px; animation-duration: 23s; animation-delay: -7s; }
+    .ambient span:nth-child(10) { width: 3px;  height: 3px;  left: 70%; bottom: -10px; animation-duration: 20s; animation-delay: -16s; }
+
+    @keyframes float {
+      0% {
+        opacity: 0;
+        transform: translateY(0) translateX(0);
+      }
+      8% {
+        opacity: 0.7;
+      }
+      50% {
+        transform: translateY(-50vh) translateX(20px);
+      }
+      92% {
+        opacity: 0.7;
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-105vh) translateX(-10px);
+      }
+    }
+
+    /* ── warm glow ── */
+
+    .glow {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(196, 162, 101, 0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── page layout ── */
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 3rem 1.75rem 3rem;
+    }
+
+    /* ── header ── */
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.8s ease-out both;
+    }
+
+    .dateline {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #c4a265;
+      margin-bottom: 0.75rem;
+    }
+
+    .title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 2.8rem;
+      font-weight: 300;
+      line-height: 1.1;
+      color: #f0ebe3;
+      margin-bottom: 0.4rem;
+    }
+
+    .title em {
+      font-style: italic;
+      color: #c4a265;
+    }
+
+    .subtitle {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1rem;
+      font-weight: 300;
+      font-style: italic;
+      color: #8a8078;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── divider ── */
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.75rem 0;
+      animation: fadeUp 0.8s ease-out 0.1s both;
+    }
+
+    .divider-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(196, 162, 101, 0.25), transparent);
+    }
+
+    .divider-icon {
+      color: #c4a265;
+      font-size: 0.7rem;
+      opacity: 0.6;
+    }
+
+    /* ── stops ── */
+
+    .stop {
+      position: relative;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(196, 162, 101, 0.1);
+      border-radius: 12px;
+      padding: 1.75rem 1.5rem 1.5rem;
+      margin-bottom: 0;
+      animation: fadeUp 0.8s ease-out both;
+      transition: border-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .stop:hover {
+      border-color: rgba(196, 162, 101, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .stop-badge {
+      position: absolute;
+      top: -11px;
+      left: 1.5rem;
+      width: 22px;
+      height: 22px;
+      background: #1a1714;
+      border: 1px solid rgba(196, 162, 101, 0.35);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.6rem;
+      font-weight: 500;
+      color: #c4a265;
+    }
+
+    .stop-time {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #c4a265;
+      margin-bottom: 0.5rem;
+    }
+
+    .stop-name {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.65rem;
+      font-weight: 400;
+      color: #f0ebe3;
+      margin-bottom: 0.2rem;
+    }
+
+    .stop-type {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #7a7268;
+      margin-bottom: 0.85rem;
+    }
+
+    .stop-desc {
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: #b5aea4;
+      font-weight: 300;
+    }
+
+    .stop-link {
+      display: inline-block;
+      margin-top: 0.85rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: #c4a265;
+      text-decoration: none;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+
+    .stop-link:hover {
+      opacity: 1;
+    }
+
+    /* ── connectors between stops ── */
+
+    .connector {
+      display: flex;
+      justify-content: center;
+      padding: 0.5rem 0;
+      animation: fadeUp 0.6s ease-out both;
+    }
+
+    .connector span {
+      width: 1px;
+      height: 28px;
+      background: linear-gradient(180deg, rgba(196, 162, 101, 0.2), rgba(196, 162, 101, 0.05));
+    }
+
+    /* ── footer ── */
+
+    .footer {
+      text-align: center;
+      margin-top: 2.5rem;
+      animation: fadeUp 0.8s ease-out 0.6s both;
+    }
+
+    .footer-text {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 300;
+      font-style: italic;
+      color: #c4a265;
+      opacity: 0.8;
+    }
+
+    .footer-sub {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #5a544c;
+      margin-top: 0.5rem;
+    }
+
+    /* ── animation ── */
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* stagger the stops */
+    .stop:nth-of-type(1) { animation-delay: 0.15s; }
+    .stop:nth-of-type(2) { animation-delay: 0.3s; }
+    .stop:nth-of-type(3) { animation-delay: 0.45s; }
+
+    .connector:nth-of-type(1) { animation-delay: 0.22s; }
+    .connector:nth-of-type(2) { animation-delay: 0.37s; }
+  </style>
+</head>
+
+<body>
+
+  <!-- ambient floating particles -->
+  <div class="ambient">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+
+  <!-- warm background glow -->
+  <div class="glow"></div>
+
+  <div class="page">
+
+    <header class="header">
+      <div class="dateline">Friday Evening · February 27 · Detroit</div>
+      <h1 class="title">An Evening <em>Out</em></h1>
+      <p class="subtitle">scent, supper &amp; skyline</p>
+    </header>
+
+    <div class="divider">
+      <span class="divider-line"></span>
+      <span class="divider-icon">✦</span>
+      <span class="divider-line"></span>
+    </div>
+
+    <!-- Stop 1 -->
+    <section class="stop">
+      <div class="stop-badge">1</div>
+      <div class="stop-time">5:00 pm</div>
+      <h2 class="stop-name">Le Labo</h2>
+      <div class="stop-type">Fragrance Lab · Library Street</div>
+      <p class="stop-desc">Hand-blended perfumes with personalized labels in a minimalist apothecary. Detroit has its own city exclusive scent — we should probably find ours too.</p>
+    </section>
+
+    <div class="connector"><span></span></div>
+
+    <!-- Stop 2 -->
+    <section class="stop">
+      <div class="stop-badge">2</div>
+      <div class="stop-time">7:00 pm</div>
+      <h2 class="stop-name">Le Suprême</h2>
+      <div class="stop-type">French Brasserie · Washington Blvd</div>
+      <p class="stop-desc">A French brasserie in a restored 1928 building. Think escargot, steak frites, and a proper wine list. I've maybe already looked at the menu three times.</p>
+      <a class="stop-link" href="https://www.lesupremedetroit.com/dinner" target="_blank" rel="noopener">View dinner menu ↗</a>
+    </section>
+
+    <div class="connector"><span></span></div>
+
+    <!-- Stop 3 -->
+    <section class="stop">
+      <div class="stop-badge">3</div>
+      <div class="stop-time">9:30 pm</div>
+      <h2 class="stop-name">The Monarch Club</h2>
+      <div class="stop-type">Rooftop Cocktails · 13th Floor</div>
+      <p class="stop-desc">Cocktails thirteen stories up with a view of the whole city. They have firepits on the terrace — if the weather's with us, we're sitting outside.</p>
+      <a class="stop-link" href="https://monarchclubdetroit.com/drinks/" target="_blank" rel="noopener">View drinks ↗</a>
+    </section>
+
+    <footer class="footer">
+      <p class="footer-text">See you Friday</p>
+      <p class="footer-sub">Downtown Detroit</p>
+    </footer>
+
+  </div>
+
+</body>
+
+</html>
