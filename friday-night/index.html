@@ -600,6 +600,16 @@
     document.addEventListener('touchstart', onPointerDown, { passive: false });
     document.addEventListener('touchmove', onPointerMove, { passive: false });
     document.addEventListener('touchend', onPointerUp);
+    document.addEventListener('touchcancel', () => {
+      if (!dragCard) return;
+      dragCard.style.transition = '';
+      const isFlipped = dragCard.classList.contains('flipped');
+      dragCard.style.transform = isFlipped ? 'rotateY(180deg)' : '';
+      delete dragCard.dataset.swiping;
+      dragging = false;
+      dragCard = null;
+      dx = 0;
+    });
   </script>
 
 </body>
