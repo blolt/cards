@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Friday Night — Ayana</title>
 
   <!-- Open Graph for rich link previews -->
@@ -16,9 +16,7 @@
   <!-- Keep out of search engines -->
   <meta name="robots" content="noindex, nofollow" />
 
-  <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@400;500&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -26,372 +24,586 @@
       box-sizing: border-box;
     }
 
+    html,
     body {
-      background: #141210;
-      color: #ece5db;
-      font-family: 'Crimson Pro', Georgia, serif;
-      min-height: 100vh;
-      overflow-x: hidden;
+      height: 100%;
+      overflow: hidden;
+      touch-action: none;
     }
 
-    /* subtle grain overlay */
+    /* ── pewabic-inspired tile floor ── */
+
+    body {
+      background-color: #2a5c5a;
+      background-image:
+        /* base checkerboard */
+        repeating-conic-gradient(#1e4a48 0% 25%, #2d6360 0% 50%);
+      background-size: 64px 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    /* iridescent glaze sheen */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(80, 160, 140, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 70%, rgba(60, 100, 150, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(90, 170, 130, 0.06) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* subtle vignette */
     body::after {
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 100;
-    }
-
-    /* ── ambient floating particles ── */
-
-    .ambient {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.25) 100%);
       pointer-events: none;
       z-index: 0;
     }
 
-    .ambient span {
-      position: absolute;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(196, 162, 101, 0.6), rgba(196, 162, 101, 0) 70%);
-      opacity: 0;
-      animation: float linear infinite;
-    }
+    /* ── card stack container ── */
 
-    .ambient span:nth-child(1)  { width: 4px;  height: 4px;  left: 12%; bottom: -10px; animation-duration: 18s; animation-delay: 0s; }
-    .ambient span:nth-child(2)  { width: 3px;  height: 3px;  left: 28%; bottom: -10px; animation-duration: 22s; animation-delay: -4s; }
-    .ambient span:nth-child(3)  { width: 5px;  height: 5px;  left: 45%; bottom: -10px; animation-duration: 16s; animation-delay: -8s; }
-    .ambient span:nth-child(4)  { width: 3px;  height: 3px;  left: 62%; bottom: -10px; animation-duration: 20s; animation-delay: -2s; }
-    .ambient span:nth-child(5)  { width: 4px;  height: 4px;  left: 78%; bottom: -10px; animation-duration: 24s; animation-delay: -12s; }
-    .ambient span:nth-child(6)  { width: 3px;  height: 3px;  left: 88%; bottom: -10px; animation-duration: 19s; animation-delay: -6s; }
-    .ambient span:nth-child(7)  { width: 5px;  height: 5px;  left: 35%; bottom: -10px; animation-duration: 21s; animation-delay: -14s; }
-    .ambient span:nth-child(8)  { width: 3px;  height: 3px;  left: 55%; bottom: -10px; animation-duration: 17s; animation-delay: -10s; }
-    .ambient span:nth-child(9)  { width: 4px;  height: 4px;  left: 5%;  bottom: -10px; animation-duration: 23s; animation-delay: -7s; }
-    .ambient span:nth-child(10) { width: 3px;  height: 3px;  left: 70%; bottom: -10px; animation-duration: 20s; animation-delay: -16s; }
-
-    @keyframes float {
-      0% {
-        opacity: 0;
-        transform: translateY(0) translateX(0);
-      }
-      8% {
-        opacity: 0.7;
-      }
-      50% {
-        transform: translateY(-50vh) translateX(20px);
-      }
-      92% {
-        opacity: 0.7;
-      }
-      100% {
-        opacity: 0;
-        transform: translateY(-105vh) translateX(-10px);
-      }
-    }
-
-    /* ── warm glow ── */
-
-    .glow {
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(circle, rgba(196, 162, 101, 0.04) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* ── page layout ── */
-
-    .page {
+    .stack {
       position: relative;
+      width: 320px;
+      height: 440px;
       z-index: 1;
-      max-width: 500px;
-      margin: 0 auto;
-      padding: 3rem 1.75rem 3rem;
+      perspective: 1200px;
     }
 
-    /* ── header ── */
+    /* ── individual postcard ── */
 
-    .header {
-      text-align: center;
-      margin-bottom: 2rem;
-      animation: fadeUp 0.8s ease-out both;
-    }
-
-    .dateline {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.6rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: #c4a265;
-      margin-bottom: 0.75rem;
-    }
-
-    .title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 2.8rem;
-      font-weight: 300;
-      line-height: 1.1;
-      color: #f0ebe3;
-      margin-bottom: 0.4rem;
-    }
-
-    .title em {
-      font-style: italic;
-      color: #c4a265;
-    }
-
-    .subtitle {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 1rem;
-      font-weight: 300;
-      font-style: italic;
-      color: #8a8078;
-      letter-spacing: 0.04em;
-    }
-
-    /* ── divider ── */
-
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin: 1.75rem 0;
-      animation: fadeUp 0.8s ease-out 0.1s both;
-    }
-
-    .divider-line {
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(196, 162, 101, 0.25), transparent);
-    }
-
-    .divider-icon {
-      color: #c4a265;
-      font-size: 0.7rem;
-      opacity: 0.6;
-    }
-
-    /* ── stops ── */
-
-    .stop {
-      position: relative;
-      background: rgba(255, 255, 255, 0.025);
-      border: 1px solid rgba(196, 162, 101, 0.1);
-      border-radius: 12px;
-      padding: 1.75rem 1.5rem 1.5rem;
-      margin-bottom: 0;
-      animation: fadeUp 0.8s ease-out both;
-      transition: border-color 0.3s ease, transform 0.3s ease;
-    }
-
-    .stop:hover {
-      border-color: rgba(196, 162, 101, 0.25);
-      transform: translateY(-2px);
-    }
-
-    .stop-badge {
+    .postcard {
       position: absolute;
-      top: -11px;
-      left: 1.5rem;
-      width: 22px;
-      height: 22px;
-      background: #1a1714;
-      border: 1px solid rgba(196, 162, 101, 0.35);
-      border-radius: 50%;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.4s ease;
+      transform-style: preserve-3d;
+      will-change: transform;
+      /* subtle drop shadow on tile — box-shadow instead of filter to preserve 3D context */
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25),
+        0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .postcard.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .postcard.swiped {
+      transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.4s ease;
+      opacity: 0;
+    }
+
+    .postcard.swiped-left {
+      transform: translateX(-140%) rotate(-15deg);
+    }
+
+    .postcard.swiped-right {
+      transform: translateX(140%) rotate(15deg);
+    }
+
+    .postcard.flipped.swiped-left {
+      transform: rotateY(180deg) translateX(140%) rotate(15deg);
+    }
+
+    .postcard.flipped.swiped-right {
+      transform: rotateY(180deg) translateX(-140%) rotate(-15deg);
+    }
+
+    /* stack offset — all 3 cards visible with staggered rotation */
+    .postcard:nth-child(3) {
+      transform: rotate(-3deg) translate(-8px, 8px);
+      z-index: 1;
+    }
+
+    .postcard:nth-child(2) {
+      transform: rotate(2deg) translate(5px, 4px);
+      z-index: 2;
+    }
+
+    .postcard:nth-child(1) {
+      transform: rotate(-0.5deg);
+      z-index: 3;
+    }
+
+    /* ── front & back faces ── */
+
+    .postcard-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .postcard-front {
+      background: #ffffff;
+      padding: 14px 14px 40px 14px;
+      z-index: 2;
+    }
+
+    .postcard-back {
+      background: #ffffff;
+      transform: rotateY(180deg);
+      padding: 14px;
+      z-index: 1;
+    }
+
+    .postcard-back-inner {
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      border-radius: 2px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.6rem;
-      font-weight: 500;
-      color: #c4a265;
+      padding: 1.5rem;
+      position: relative;
     }
 
-    .stop-time {
-      font-family: 'DM Sans', sans-serif;
+    /* ── front: image with white border + venue name ── */
+
+    .postcard-front .image-placeholder {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-color: #d6cebb;
+      border-radius: 2px;
+    }
+
+    .postcard-front .venue-label {
+      position: absolute;
+      bottom: 10px;
+      left: 14px;
+      right: 14px;
+      text-align: center;
       font-size: 0.6rem;
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: #c4a265;
-      margin-bottom: 0.5rem;
+      color: #8a7e6e;
     }
 
-    .stop-name {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 1.65rem;
-      font-weight: 400;
-      color: #f0ebe3;
-      margin-bottom: 0.2rem;
+    /* ── back: postcard style ── */
+
+    .postcard-back .stamp {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      width: 56px;
+      height: 66px;
+      transform: rotate(3deg);
+      z-index: 2;
     }
 
-    .stop-type {
-      font-family: 'DM Sans', sans-serif;
+    .postcard-back .stamp-inner {
+      width: 100%;
+      height: 100%;
+    }
+
+    .postcard-back .stamp-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* stamps with built-in borders — just show the image */
+    .postcard-back .stamp-inner.stamp-has-border {
+      background: transparent;
+    }
+
+    /* stamps that need perforated edges added */
+    .postcard-back .stamp-inner.stamp-perforated {
+      background: #efe8dc;
+      padding: 5px;
+      -webkit-mask-image:
+        radial-gradient(circle at 5px 0, transparent 3px, black 3.5px),
+        radial-gradient(circle at 5px 100%, transparent 3px, black 3.5px),
+        radial-gradient(circle at 0 5px, transparent 3px, black 3.5px),
+        radial-gradient(circle at 100% 5px, transparent 3px, black 3.5px);
+      -webkit-mask-size:
+        10px 100%,
+        10px 100%,
+        100% 10px,
+        100% 10px;
+      -webkit-mask-repeat:
+        repeat-x,
+        repeat-x,
+        repeat-y,
+        repeat-y;
+      -webkit-mask-composite: source-in;
+      mask-image:
+        radial-gradient(circle at 5px 0, transparent 3px, black 3.5px),
+        radial-gradient(circle at 5px 100%, transparent 3px, black 3.5px),
+        radial-gradient(circle at 0 5px, transparent 3px, black 3.5px),
+        radial-gradient(circle at 100% 5px, transparent 3px, black 3.5px);
+      mask-size:
+        10px 100%,
+        10px 100%,
+        100% 10px,
+        100% 10px;
+      mask-repeat:
+        repeat-x,
+        repeat-x,
+        repeat-y,
+        repeat-y;
+      mask-composite: intersect;
+    }
+
+    .postcard-back .venue-name {
+      font-family: 'Caveat', cursive;
+      font-size: 1.6rem;
+      font-weight: 500;
+      color: #3a3530;
+      margin-bottom: 0.25rem;
+      text-align: center;
+    }
+
+    .postcard-back .venue-detail {
+      font-family: 'Caveat', cursive;
+      font-size: 1.05rem;
+      color: #8a7e6e;
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .postcard-back .postcard-lines {
+      width: 80%;
+      margin-top: auto;
+    }
+
+    .postcard-back .postcard-lines span {
+      display: block;
+      height: 1px;
+      background: #ddd8cc;
+      margin-bottom: 1.4rem;
+    }
+
+    .postcard-back .divider-line {
+      width: 50%;
+      height: 1px;
+      background: #d6cebb;
+      margin: 0.75rem 0 1rem;
+    }
+
+    /* ── hint text ── */
+
+    .hint {
+      position: fixed;
+      bottom: 2rem;
+      left: 0;
+      right: 0;
+      text-align: center;
       font-size: 0.65rem;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: #7a7268;
-      margin-bottom: 0.85rem;
-    }
-
-    .stop-desc {
-      font-size: 0.95rem;
-      line-height: 1.65;
-      color: #b5aea4;
-      font-weight: 300;
-    }
-
-    .stop-link {
-      display: inline-block;
-      margin-top: 0.85rem;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
-      color: #c4a265;
-      text-decoration: none;
+      color: #a0c4be;
+      z-index: 10;
       opacity: 0.7;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.3s ease;
     }
 
-    .stop-link:hover {
+    .hint.hidden {
+      opacity: 0;
+    }
+
+    /* ── done state ── */
+
+    .done-message {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      z-index: 0;
+    }
+
+    .done-message .done-text {
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #a0c4be;
+      opacity: 0;
+      transition: opacity 0.6s ease 0.3s;
+    }
+
+    .done-message.visible .done-text {
       opacity: 1;
     }
 
-    /* ── connectors between stops ── */
-
-    .connector {
-      display: flex;
-      justify-content: center;
-      padding: 0.5rem 0;
-      animation: fadeUp 0.6s ease-out both;
+    .done-message .reset-btn {
+      opacity: 0;
+      transition: opacity 0.5s ease 0.8s;
+      background: none;
+      border: none;
+      padding: 0.5rem;
+      cursor: pointer;
+      color: #a0c4be;
+      line-height: 1;
     }
 
-    .connector span {
-      width: 1px;
-      height: 28px;
-      background: linear-gradient(180deg, rgba(196, 162, 101, 0.2), rgba(196, 162, 101, 0.05));
+    .done-message .reset-btn svg {
+      width: 24px;
+      height: 24px;
+      stroke: #a0c4be;
+      fill: none;
+      stroke-width: 1.5;
+      transition: transform 0.3s ease;
     }
 
-    /* ── footer ── */
-
-    .footer {
-      text-align: center;
-      margin-top: 2.5rem;
-      animation: fadeUp 0.8s ease-out 0.6s both;
+    .done-message .reset-btn:active svg {
+      transform: rotate(-45deg);
     }
 
-    .footer-text {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 1.15rem;
-      font-weight: 300;
-      font-style: italic;
-      color: #c4a265;
-      opacity: 0.8;
+    .done-message.visible .reset-btn {
+      opacity: 1;
     }
-
-    .footer-sub {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.55rem;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
-      color: #5a544c;
-      margin-top: 0.5rem;
-    }
-
-    /* ── animation ── */
-
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(16px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* stagger the stops */
-    .stop:nth-of-type(1) { animation-delay: 0.15s; }
-    .stop:nth-of-type(2) { animation-delay: 0.3s; }
-    .stop:nth-of-type(3) { animation-delay: 0.45s; }
-
-    .connector:nth-of-type(1) { animation-delay: 0.22s; }
-    .connector:nth-of-type(2) { animation-delay: 0.37s; }
   </style>
 </head>
 
 <body>
 
-  <!-- ambient floating particles -->
-  <div class="ambient">
-    <span></span><span></span><span></span><span></span><span></span>
-    <span></span><span></span><span></span><span></span><span></span>
-  </div>
+  <div class="stack" id="stack">
 
-  <!-- warm background glow -->
-  <div class="glow"></div>
-
-  <div class="page">
-
-    <header class="header">
-      <div class="dateline">Friday Evening · February 27 · Detroit</div>
-      <h1 class="title">An Evening <em>Out</em></h1>
-      <p class="subtitle">scent, supper &amp; skyline</p>
-    </header>
-
-    <div class="divider">
-      <span class="divider-line"></span>
-      <span class="divider-icon">✦</span>
-      <span class="divider-line"></span>
+    <!-- Postcard 1 (top) — Le Labo -->
+    <div class="postcard" data-index="0">
+      <div class="postcard-face postcard-front">
+        <div class="image-placeholder" style="background-image: url('le-labo.avif')"></div>
+        <div class="venue-label">Le Labo</div>
+      </div>
+      <div class="postcard-face postcard-back">
+        <div class="postcard-back-inner">
+          <div class="stamp">
+            <div class="stamp-inner stamp-perforated"><img class="stamp-img" src="le-labo-stamp.png" alt="stamp"
+                style="object-fit: contain"></div>
+          </div>
+          <div class="venue-name">Fragrant fun</div>
+          <div class="divider-line"></div>
+          <div class="venue-detail">
+            <br><br><br><br>
+            We will shop about <br>
+            and see which scents <br>
+            we like the best.
+          </div>
+          <div class="postcard-lines">
+            <span>
+              <div class="venue-detail">6:30 pm - 6:50 pm</div>
+            </span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Stop 1 -->
-    <section class="stop">
-      <div class="stop-badge">1</div>
-      <div class="stop-time">5:00 pm</div>
-      <h2 class="stop-name">Le Labo</h2>
-      <div class="stop-type">Fragrance Lab · Library Street</div>
-      <p class="stop-desc">Hand-blended perfumes with personalized labels in a minimalist apothecary. Detroit has its own city exclusive scent — we should probably find ours too.</p>
-    </section>
+    <!-- Postcard 2 — Le Suprême -->
+    <div class="postcard" data-index="1">
+      <div class="postcard-face postcard-front">
+        <div class="image-placeholder"
+          style="background-image: url('Le-Supreme-Dining-Area-2-Matthew-Williams__HERO.jpg')"></div>
+        <div class="venue-label">Le Suprême</div>
+      </div>
+      <div class="postcard-face postcard-back">
+        <div class="postcard-back-inner">
+          <div class="stamp">
+            <div class="stamp-inner stamp-perforated"><img class="stamp-img" src="le-supreme-stamp.png" alt="stamp"
+                style="object-fit: contain"></div>
+          </div>
+          <div class="venue-name">A real meal</div>
+          <div class="divider-line"></div>
+          <div class="venue-detail">
+            <br><br><br><br>
+            A proper french brasserie <br>
+            with real portions <br>
+            and our own plates <br>
+          </div>
+          <div class="postcard-lines">
+            <span>
+              <div class="venue-detail">7:00 pm - 9:00 pm</div>
+            </span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <div class="connector"><span></span></div>
+    <!-- Postcard 3 (bottom) — Saksey's -->
+    <div class="postcard" data-index="2">
+      <div class="postcard-face postcard-front">
+        <div class="image-placeholder" style="background-image: url('sacksey\'s-drink.jpg')"></div>
+        <div class="venue-label">Sacksey</div>
+      </div>
+      <div class="postcard-face postcard-back">
+        <div class="postcard-back-inner">
+          <div class="stamp">
+            <div class="stamp-inner stamp-perforated"><img class="stamp-img" src="sacksey's-stamp.png" alt="stamp"
+                style="object-fit: contain"></div>
+          </div>
+          <div class="venue-name">Just one drink</div>
+          <div class="divider-line"></div>
+          <div class="venue-detail">
+            <br><br><br><br>
+            Maybe two <br>
+            but no more <br>
+            than that
+          </div>
+          <div class="postcard-lines">
+            <span>
+              <div class="venue-detail">9:15 pm - </div>
+            </span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- Stop 2 -->
-    <section class="stop">
-      <div class="stop-badge">2</div>
-      <div class="stop-time">7:00 pm</div>
-      <h2 class="stop-name">Le Suprême</h2>
-      <div class="stop-type">French Brasserie · Washington Blvd</div>
-      <p class="stop-desc">A French brasserie in a restored 1928 building. Think escargot, steak frites, and a proper wine list. I've maybe already looked at the menu three times.</p>
-      <a class="stop-link" href="https://www.lesupremedetroit.com/dinner" target="_blank" rel="noopener">View dinner menu ↗</a>
-    </section>
-
-    <div class="connector"><span></span></div>
-
-    <!-- Stop 3 -->
-    <section class="stop">
-      <div class="stop-badge">3</div>
-      <div class="stop-time">9:30 pm</div>
-      <h2 class="stop-name">The Monarch Club</h2>
-      <div class="stop-type">Rooftop Cocktails · 13th Floor</div>
-      <p class="stop-desc">Cocktails thirteen stories up with a view of the whole city. They have firepits on the terrace — if the weather's with us, we're sitting outside.</p>
-      <a class="stop-link" href="https://monarchclubdetroit.com/drinks/" target="_blank" rel="noopener">View drinks ↗</a>
-    </section>
-
-    <footer class="footer">
-      <p class="footer-text">See you Friday</p>
-      <p class="footer-sub">Downtown Detroit</p>
-    </footer>
-
+    <div class="done-message" id="done">
+      <span class="done-text">See you Friday :)</span>
+      <button class="reset-btn" id="resetBtn" aria-label="Start over">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 8 8" stroke-linecap="round" />
+          <polyline points="17.65 2 17.65 6.35 13.3 6.35" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
   </div>
+
+  <div class="hint" id="hint">Tap to flip · Swipe to continue</div>
+
+  <script>
+    const cards = Array.from(document.querySelectorAll('.postcard'));
+    const hint = document.getElementById('hint');
+    const done = document.getElementById('done');
+    let currentIndex = 0;
+
+    // --- tap to flip ---
+    cards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        // don't flip if mid-swipe
+        if (card.dataset.swiping) return;
+        card.classList.toggle('flipped');
+      });
+    });
+
+    // --- swipe to dismiss ---
+    let startX = 0;
+    let startY = 0;
+    let dragging = false;
+    let dragCard = null;
+    let dx = 0;
+
+    function getTopCard() {
+      return currentIndex < cards.length ? cards[currentIndex] : null;
+    }
+
+    function onPointerDown(e) {
+      const card = getTopCard();
+      if (!card) return;
+      dragging = true;
+      dragCard = card;
+      dragCard.dataset.swiping = '';
+      startX = e.clientX || e.touches?.[0]?.clientX || 0;
+      startY = e.clientY || e.touches?.[0]?.clientY || 0;
+      dx = 0;
+      dragCard.style.transition = 'none';
+    }
+
+    function onPointerMove(e) {
+      if (!dragging || !dragCard) return;
+      e.preventDefault();
+      const clientX = e.clientX || e.touches?.[0]?.clientX || 0;
+      dx = clientX - startX;
+      const rotation = dx * 0.08;
+      const isFlipped = dragCard.classList.contains('flipped');
+      if (isFlipped) {
+        dragCard.style.transform = `rotateY(180deg) translateX(${-dx}px) rotate(${-rotation}deg)`;
+      } else {
+        dragCard.style.transform = `translateX(${dx}px) rotate(${rotation}deg)`;
+      }
+    }
+
+    function onPointerUp(e) {
+      if (!dragging || !dragCard) return;
+      dragging = false;
+      dragCard.style.transition = '';
+      delete dragCard.dataset.swiping;
+
+      const threshold = 80;
+
+      if (Math.abs(dx) > threshold) {
+        // swipe away
+        const direction = dx > 0 ? 'right' : 'left';
+        dragCard.classList.add('swiped', `swiped-${direction}`);
+        currentIndex++;
+
+        // re-z-index remaining cards
+        cards.forEach((c, i) => {
+          if (i >= currentIndex) {
+            c.style.zIndex = cards.length - i;
+          }
+        });
+
+        if (currentIndex >= cards.length) {
+          done.classList.add('visible');
+          hint.classList.add('hidden');
+        }
+      } else {
+        // snap back
+        const isFlipped = dragCard.classList.contains('flipped');
+        if (isFlipped) {
+          dragCard.style.transform = 'rotateY(180deg)';
+        } else {
+          dragCard.style.transform = '';
+        }
+      }
+
+      dragCard = null;
+      dx = 0;
+    }
+
+    // --- reset ---
+    const resetBtn = document.getElementById('resetBtn');
+
+    resetBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      done.classList.remove('visible');
+      hint.classList.remove('hidden');
+      currentIndex = 0;
+
+      cards.forEach((card) => {
+        card.classList.remove('flipped', 'swiped', 'swiped-left', 'swiped-right');
+        card.style.transform = '';
+        card.style.transition = '';
+        card.style.zIndex = '';
+      });
+    });
+
+    // mouse events
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('mousemove', onPointerMove);
+    document.addEventListener('mouseup', onPointerUp);
+
+    // touch events
+    document.addEventListener('touchstart', onPointerDown, { passive: false });
+    document.addEventListener('touchmove', onPointerMove, { passive: false });
+    document.addEventListener('touchend', onPointerUp);
+  </script>
 
 </body>
 
