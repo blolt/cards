@@ -94,10 +94,6 @@
         0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
-    .postcard.dragging {
-      transition: none !important;
-    }
-
     .postcard.flipped {
       transform: rotateY(180deg);
     }
@@ -495,76 +491,45 @@
     const cards = Array.from(document.querySelectorAll('.postcard'));
     const hint = document.getElementById('hint');
     const done = document.getElementById('done');
-    const resetBtn = document.getElementById('resetBtn');
     let currentIndex = 0;
 
-    const SWIPE_THRESHOLD = 130;
+    // --- tap to flip ---
+    cards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (card.dataset.swiping) return;
+        card.classList.toggle('flipped');
+      });
+    });
+
+    // --- swipe to dismiss ---
+    let startX = 0;
+    let startY = 0;
+    let dragging = false;
+    let dragCard = null;
+    let dx = 0;
 
     function getTopCard() {
       return currentIndex < cards.length ? cards[currentIndex] : null;
     }
 
-    function dismissCard(card, direction) {
-      card.classList.add('swiped', 'swiped-' + direction);
-      currentIndex++;
-      cards.forEach((c, i) => {
-        if (i >= currentIndex) c.style.zIndex = cards.length - i;
-      });
-      if (currentIndex >= cards.length) {
-        done.classList.add('visible');
-        hint.classList.add('hidden');
-      }
-    }
-
-    // ── TAP TO FLIP ──
-    // Uses click event — simple, reliable, works on all devices
-    let didDrag = false;
-
-    cards.forEach(card => {
-      card.addEventListener('click', () => {
-        if (didDrag) return;           // was a drag, not a tap
-        if (card.classList.contains('swiped')) return;
-        card.classList.toggle('flipped');
-      });
-    });
-
-    // ── DRAG / SWIPE ──
-    let startX = 0;
-    let dragging = false;
-    let dragCard = null;
-    let dx = 0;
-
-    function getX(e) {
-      if (e.touches?.length) return e.touches[0].clientX;
-      if (e.changedTouches?.length) return e.changedTouches[0].clientX;
-      return e.clientX;
-    }
-
-    function onStart(e) {
-      if (e.target.closest('.reset-btn')) return;
+    function onPointerDown(e) {
       const card = getTopCard();
       if (!card) return;
-
       dragging = true;
-      didDrag = false;
       dragCard = card;
-      startX = getX(e);
+      dragCard.dataset.swiping = '';
+      startX = e.clientX || e.touches?.[0]?.clientX || 0;
+      startY = e.clientY || e.touches?.[0]?.clientY || 0;
       dx = 0;
+      dragCard.style.transition = 'none';
     }
 
-    function onMove(e) {
+    function onPointerMove(e) {
       if (!dragging || !dragCard) return;
-
-      dx = getX(e) - startX;
-
-      // don't start visual drag until finger moves a bit
-      if (Math.abs(dx) < 8) return;
-
-      didDrag = true;
       e.preventDefault();
-      dragCard.classList.add('dragging');
-
-      const rotation = dx * 0.06;
+      const clientX = e.clientX || e.touches?.[0]?.clientX || 0;
+      dx = clientX - startX;
+      const rotation = dx * 0.08;
       const isFlipped = dragCard.classList.contains('flipped');
       if (isFlipped) {
         dragCard.style.transform = `rotateY(180deg) translateX(${-dx}px) rotate(${-rotation}deg)`;
@@ -573,41 +538,45 @@
       }
     }
 
-    function onEnd(e) {
+    function onPointerUp(e) {
       if (!dragging || !dragCard) return;
-      const card = dragCard;
       dragging = false;
-      dragCard = null;
+      dragCard.style.transition = '';
+      delete dragCard.dataset.swiping;
 
-      card.classList.remove('dragging');
+      const threshold = 80;
 
-      if (Math.abs(dx) > SWIPE_THRESHOLD) {
-        // ── SWIPE → dismiss ──
-        card.style.transform = '';
-        dismissCard(card, dx > 0 ? 'right' : 'left');
+      if (Math.abs(dx) > threshold) {
+        const direction = dx > 0 ? 'right' : 'left';
+        dragCard.classList.add('swiped', `swiped-${direction}`);
+        currentIndex++;
+
+        cards.forEach((c, i) => {
+          if (i >= currentIndex) {
+            c.style.zIndex = cards.length - i;
+          }
+        });
+
+        if (currentIndex >= cards.length) {
+          done.classList.add('visible');
+          hint.classList.add('hidden');
+        }
       } else {
-        // ── snap back ──
-        card.style.transform = '';
-        if (card.classList.contains('flipped')) {
-          card.style.transform = 'rotateY(180deg)';
+        const isFlipped = dragCard.classList.contains('flipped');
+        if (isFlipped) {
+          dragCard.style.transform = 'rotateY(180deg)';
+        } else {
+          dragCard.style.transform = '';
         }
       }
-      dx = 0;
-    }
 
-    function onCancel() {
-      if (!dragCard) return;
-      dragCard.classList.remove('dragging');
-      dragCard.style.transform = '';
-      if (dragCard.classList.contains('flipped')) {
-        dragCard.style.transform = 'rotateY(180deg)';
-      }
-      dragging = false;
       dragCard = null;
       dx = 0;
     }
 
     // --- reset ---
+    const resetBtn = document.getElementById('resetBtn');
+
     resetBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       done.classList.remove('visible');
@@ -615,22 +584,22 @@
       currentIndex = 0;
 
       cards.forEach((card) => {
-        card.classList.remove('flipped', 'swiped', 'swiped-left', 'swiped-right', 'dragging');
+        card.classList.remove('flipped', 'swiped', 'swiped-left', 'swiped-right');
         card.style.transform = '';
+        card.style.transition = '';
         card.style.zIndex = '';
       });
     });
 
-    // mouse
-    document.addEventListener('mousedown', onStart);
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onEnd);
+    // mouse events
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('mousemove', onPointerMove);
+    document.addEventListener('mouseup', onPointerUp);
 
-    // touch
-    document.addEventListener('touchstart', onStart, { passive: true });
-    document.addEventListener('touchmove', onMove, { passive: false });
-    document.addEventListener('touchend', onEnd);
-    document.addEventListener('touchcancel', onCancel);
+    // touch events
+    document.addEventListener('touchstart', onPointerDown, { passive: false });
+    document.addEventListener('touchmove', onPointerMove, { passive: false });
+    document.addEventListener('touchend', onPointerUp);
   </script>
 
 </body>
