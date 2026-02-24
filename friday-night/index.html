@@ -498,49 +498,72 @@
     const resetBtn = document.getElementById('resetBtn');
     let currentIndex = 0;
 
-    let startX = 0;
-    let dragging = false;
-    let hasMoved = false;
-    let dragCard = null;
-    let dx = 0;
-
-    const DRAG_THRESHOLD = 15;   // movement below this is a tap
-    const SWIPE_THRESHOLD = 130; // movement above this dismisses the card
+    const SWIPE_THRESHOLD = 130;
 
     function getTopCard() {
       return currentIndex < cards.length ? cards[currentIndex] : null;
     }
 
-    function getX(e) {
-      return e.clientX ?? e.touches?.[0]?.clientX ?? e.changedTouches?.[0]?.clientX ?? 0;
+    function dismissCard(card, direction) {
+      card.classList.add('swiped', 'swiped-' + direction);
+      currentIndex++;
+      cards.forEach((c, i) => {
+        if (i >= currentIndex) c.style.zIndex = cards.length - i;
+      });
+      if (currentIndex >= cards.length) {
+        done.classList.add('visible');
+        hint.classList.add('hidden');
+      }
     }
 
-    function onPointerDown(e) {
+    // ── TAP TO FLIP ──
+    // Uses click event — simple, reliable, works on all devices
+    let didDrag = false;
+
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        if (didDrag) return;           // was a drag, not a tap
+        if (card.classList.contains('swiped')) return;
+        card.classList.toggle('flipped');
+      });
+    });
+
+    // ── DRAG / SWIPE ──
+    let startX = 0;
+    let dragging = false;
+    let dragCard = null;
+    let dx = 0;
+
+    function getX(e) {
+      if (e.touches?.length) return e.touches[0].clientX;
+      if (e.changedTouches?.length) return e.changedTouches[0].clientX;
+      return e.clientX;
+    }
+
+    function onStart(e) {
       if (e.target.closest('.reset-btn')) return;
       const card = getTopCard();
       if (!card) return;
 
       dragging = true;
-      hasMoved = false;
+      didDrag = false;
       dragCard = card;
       startX = getX(e);
       dx = 0;
     }
 
-    function onPointerMove(e) {
+    function onMove(e) {
       if (!dragging || !dragCard) return;
 
       dx = getX(e) - startX;
 
-      // finger hasn't moved enough — still a potential tap
-      if (!hasMoved) {
-        if (Math.abs(dx) <= DRAG_THRESHOLD) return;
-        // crossed drag threshold — start dragging
-        hasMoved = true;
-        dragCard.classList.add('dragging');
-      }
+      // don't start visual drag until finger moves a bit
+      if (Math.abs(dx) < 8) return;
 
+      didDrag = true;
       e.preventDefault();
+      dragCard.classList.add('dragging');
+
       const rotation = dx * 0.06;
       const isFlipped = dragCard.classList.contains('flipped');
       if (isFlipped) {
@@ -550,62 +573,38 @@
       }
     }
 
-    function release(card) {
-      if (!card) return;
+    function onEnd(e) {
+      if (!dragging || !dragCard) return;
+      const card = dragCard;
+      dragging = false;
+      dragCard = null;
 
-      // remove drag state — CSS transitions kick back in
       card.classList.remove('dragging');
-      card.style.transform = '';
 
-      if (!hasMoved) {
-        // ── TAP → flip ──
-        card.classList.toggle('flipped');
-
-      } else if (Math.abs(dx) > SWIPE_THRESHOLD) {
+      if (Math.abs(dx) > SWIPE_THRESHOLD) {
         // ── SWIPE → dismiss ──
-        const dir = dx > 0 ? 'right' : 'left';
-        card.classList.add('swiped', 'swiped-' + dir);
-        currentIndex++;
-
-        cards.forEach((c, i) => {
-          if (i >= currentIndex) c.style.zIndex = cards.length - i;
-        });
-
-        if (currentIndex >= cards.length) {
-          done.classList.add('visible');
-          hint.classList.add('hidden');
-        }
-
+        card.style.transform = '';
+        dismissCard(card, dx > 0 ? 'right' : 'left');
       } else {
-        // ── SHORT DRAG → snap back ──
-        const isFlipped = card.classList.contains('flipped');
-        if (isFlipped) {
+        // ── snap back ──
+        card.style.transform = '';
+        if (card.classList.contains('flipped')) {
           card.style.transform = 'rotateY(180deg)';
         }
-        // else transform is already '' from above
       }
-
-      dragging = false;
-      dragCard = null;
       dx = 0;
     }
 
-    function onPointerUp(e) {
-      if (!dragging || !dragCard) return;
-      release(dragCard);
-    }
-
-    function onPointerCancel(e) {
+    function onCancel() {
       if (!dragCard) return;
-      // touch was cancelled — snap back no matter what
-      hasMoved = false;
-      dx = 0;
       dragCard.classList.remove('dragging');
       dragCard.style.transform = '';
-      const isFlipped = dragCard.classList.contains('flipped');
-      if (isFlipped) dragCard.style.transform = 'rotateY(180deg)';
+      if (dragCard.classList.contains('flipped')) {
+        dragCard.style.transform = 'rotateY(180deg)';
+      }
       dragging = false;
       dragCard = null;
+      dx = 0;
     }
 
     // --- reset ---
@@ -623,15 +622,15 @@
     });
 
     // mouse
-    document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('mousemove', onPointerMove);
-    document.addEventListener('mouseup', onPointerUp);
+    document.addEventListener('mousedown', onStart);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
 
     // touch
-    document.addEventListener('touchstart', onPointerDown, { passive: true });
-    document.addEventListener('touchmove', onPointerMove, { passive: false });
-    document.addEventListener('touchend', onPointerUp);
-    document.addEventListener('touchcancel', onPointerCancel);
+    document.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+    document.addEventListener('touchcancel', onCancel);
   </script>
 
 </body>
