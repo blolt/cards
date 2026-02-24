@@ -94,6 +94,10 @@
         0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
+    .postcard.dragging {
+      transition: none !important;
+    }
+
     .postcard.flipped {
       transform: rotateY(180deg);
     }
@@ -494,98 +498,114 @@
     const resetBtn = document.getElementById('resetBtn');
     let currentIndex = 0;
 
-    // --- unified pointer handling (tap + swipe) ---
     let startX = 0;
-    let startY = 0;
     let dragging = false;
     let hasMoved = false;
     let dragCard = null;
     let dx = 0;
 
-    const TAP_THRESHOLD = 10;
-    const SWIPE_THRESHOLD = 80;
+    const DRAG_THRESHOLD = 15;   // movement below this is a tap
+    const SWIPE_THRESHOLD = 130; // movement above this dismisses the card
 
     function getTopCard() {
       return currentIndex < cards.length ? cards[currentIndex] : null;
     }
 
-    function onPointerDown(e) {
-      // ignore if tapping on the reset button
-      if (e.target.closest('.reset-btn')) return;
+    function getX(e) {
+      return e.clientX ?? e.touches?.[0]?.clientX ?? e.changedTouches?.[0]?.clientX ?? 0;
+    }
 
+    function onPointerDown(e) {
+      if (e.target.closest('.reset-btn')) return;
       const card = getTopCard();
       if (!card) return;
 
       dragging = true;
       hasMoved = false;
       dragCard = card;
-      startX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
-      startY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+      startX = getX(e);
       dx = 0;
     }
 
     function onPointerMove(e) {
       if (!dragging || !dragCard) return;
 
-      const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
-      dx = clientX - startX;
+      dx = getX(e) - startX;
 
-      // only start dragging visually once past tap threshold
-      if (!hasMoved && Math.abs(dx) > TAP_THRESHOLD) {
+      // finger hasn't moved enough — still a potential tap
+      if (!hasMoved) {
+        if (Math.abs(dx) <= DRAG_THRESHOLD) return;
+        // crossed drag threshold — start dragging
         hasMoved = true;
-        dragCard.style.transition = 'none';
+        dragCard.classList.add('dragging');
       }
 
-      if (hasMoved) {
-        e.preventDefault();
-        const rotation = dx * 0.08;
-        const isFlipped = dragCard.classList.contains('flipped');
-        if (isFlipped) {
-          dragCard.style.transform = `rotateY(180deg) translateX(${-dx}px) rotate(${-rotation}deg)`;
-        } else {
-          dragCard.style.transform = `translateX(${dx}px) rotate(${rotation}deg)`;
-        }
+      e.preventDefault();
+      const rotation = dx * 0.06;
+      const isFlipped = dragCard.classList.contains('flipped');
+      if (isFlipped) {
+        dragCard.style.transform = `rotateY(180deg) translateX(${-dx}px) rotate(${-rotation}deg)`;
+      } else {
+        dragCard.style.transform = `translateX(${dx}px) rotate(${rotation}deg)`;
       }
     }
 
-    function onPointerUp(e) {
-      if (!dragging || !dragCard) return;
-      dragging = false;
+    function release(card) {
+      if (!card) return;
+
+      // remove drag state — CSS transitions kick back in
+      card.classList.remove('dragging');
+      card.style.transform = '';
 
       if (!hasMoved) {
-        // — TAP: flip the card —
-        dragCard.style.transition = '';
-        dragCard.classList.toggle('flipped');
+        // ── TAP → flip ──
+        card.classList.toggle('flipped');
+
       } else if (Math.abs(dx) > SWIPE_THRESHOLD) {
-        // — SWIPE: dismiss —
-        dragCard.style.transition = '';
-        const direction = dx > 0 ? 'right' : 'left';
-        dragCard.classList.add('swiped', `swiped-${direction}`);
+        // ── SWIPE → dismiss ──
+        const dir = dx > 0 ? 'right' : 'left';
+        card.classList.add('swiped', 'swiped-' + dir);
         currentIndex++;
 
         cards.forEach((c, i) => {
-          if (i >= currentIndex) {
-            c.style.zIndex = cards.length - i;
-          }
+          if (i >= currentIndex) c.style.zIndex = cards.length - i;
         });
 
         if (currentIndex >= cards.length) {
           done.classList.add('visible');
           hint.classList.add('hidden');
         }
+
       } else {
-        // — short drag: snap back —
-        dragCard.style.transition = '';
-        const isFlipped = dragCard.classList.contains('flipped');
+        // ── SHORT DRAG → snap back ──
+        const isFlipped = card.classList.contains('flipped');
         if (isFlipped) {
-          dragCard.style.transform = 'rotateY(180deg)';
-        } else {
-          dragCard.style.transform = '';
+          card.style.transform = 'rotateY(180deg)';
         }
+        // else transform is already '' from above
       }
 
+      dragging = false;
       dragCard = null;
       dx = 0;
+    }
+
+    function onPointerUp(e) {
+      if (!dragging || !dragCard) return;
+      release(dragCard);
+    }
+
+    function onPointerCancel(e) {
+      if (!dragCard) return;
+      // touch was cancelled — snap back no matter what
+      hasMoved = false;
+      dx = 0;
+      dragCard.classList.remove('dragging');
+      dragCard.style.transform = '';
+      const isFlipped = dragCard.classList.contains('flipped');
+      if (isFlipped) dragCard.style.transform = 'rotateY(180deg)';
+      dragging = false;
+      dragCard = null;
     }
 
     // --- reset ---
@@ -596,22 +616,22 @@
       currentIndex = 0;
 
       cards.forEach((card) => {
-        card.classList.remove('flipped', 'swiped', 'swiped-left', 'swiped-right');
+        card.classList.remove('flipped', 'swiped', 'swiped-left', 'swiped-right', 'dragging');
         card.style.transform = '';
-        card.style.transition = '';
         card.style.zIndex = '';
       });
     });
 
-    // mouse events
+    // mouse
     document.addEventListener('mousedown', onPointerDown);
     document.addEventListener('mousemove', onPointerMove);
     document.addEventListener('mouseup', onPointerUp);
 
-    // touch events
+    // touch
     document.addEventListener('touchstart', onPointerDown, { passive: true });
     document.addEventListener('touchmove', onPointerMove, { passive: false });
     document.addEventListener('touchend', onPointerUp);
+    document.addEventListener('touchcancel', onPointerCancel);
   </script>
 
 </body>
