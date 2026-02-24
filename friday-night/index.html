@@ -102,6 +102,7 @@
       transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1),
         opacity 0.4s ease;
       opacity: 0;
+      pointer-events: none;
     }
 
     .postcard.swiped-left {
@@ -490,69 +491,78 @@
     const cards = Array.from(document.querySelectorAll('.postcard'));
     const hint = document.getElementById('hint');
     const done = document.getElementById('done');
+    const resetBtn = document.getElementById('resetBtn');
     let currentIndex = 0;
 
-    // --- tap to flip ---
-    cards.forEach(card => {
-      card.addEventListener('click', (e) => {
-        // don't flip if mid-swipe
-        if (card.dataset.swiping) return;
-        card.classList.toggle('flipped');
-      });
-    });
-
-    // --- swipe to dismiss ---
+    // --- unified pointer handling (tap + swipe) ---
     let startX = 0;
     let startY = 0;
     let dragging = false;
+    let hasMoved = false;
     let dragCard = null;
     let dx = 0;
+
+    const TAP_THRESHOLD = 10;
+    const SWIPE_THRESHOLD = 80;
 
     function getTopCard() {
       return currentIndex < cards.length ? cards[currentIndex] : null;
     }
 
     function onPointerDown(e) {
+      // ignore if tapping on the reset button
+      if (e.target.closest('.reset-btn')) return;
+
       const card = getTopCard();
       if (!card) return;
+
       dragging = true;
+      hasMoved = false;
       dragCard = card;
-      dragCard.dataset.swiping = '';
-      startX = e.clientX || e.touches?.[0]?.clientX || 0;
-      startY = e.clientY || e.touches?.[0]?.clientY || 0;
+      startX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+      startY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
       dx = 0;
-      dragCard.style.transition = 'none';
     }
 
     function onPointerMove(e) {
       if (!dragging || !dragCard) return;
-      e.preventDefault();
-      const clientX = e.clientX || e.touches?.[0]?.clientX || 0;
+
+      const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
       dx = clientX - startX;
-      const rotation = dx * 0.08;
-      const isFlipped = dragCard.classList.contains('flipped');
-      if (isFlipped) {
-        dragCard.style.transform = `rotateY(180deg) translateX(${-dx}px) rotate(${-rotation}deg)`;
-      } else {
-        dragCard.style.transform = `translateX(${dx}px) rotate(${rotation}deg)`;
+
+      // only start dragging visually once past tap threshold
+      if (!hasMoved && Math.abs(dx) > TAP_THRESHOLD) {
+        hasMoved = true;
+        dragCard.style.transition = 'none';
+      }
+
+      if (hasMoved) {
+        e.preventDefault();
+        const rotation = dx * 0.08;
+        const isFlipped = dragCard.classList.contains('flipped');
+        if (isFlipped) {
+          dragCard.style.transform = `rotateY(180deg) translateX(${-dx}px) rotate(${-rotation}deg)`;
+        } else {
+          dragCard.style.transform = `translateX(${dx}px) rotate(${rotation}deg)`;
+        }
       }
     }
 
     function onPointerUp(e) {
       if (!dragging || !dragCard) return;
       dragging = false;
-      dragCard.style.transition = '';
-      delete dragCard.dataset.swiping;
 
-      const threshold = 80;
-
-      if (Math.abs(dx) > threshold) {
-        // swipe away
+      if (!hasMoved) {
+        // — TAP: flip the card —
+        dragCard.style.transition = '';
+        dragCard.classList.toggle('flipped');
+      } else if (Math.abs(dx) > SWIPE_THRESHOLD) {
+        // — SWIPE: dismiss —
+        dragCard.style.transition = '';
         const direction = dx > 0 ? 'right' : 'left';
         dragCard.classList.add('swiped', `swiped-${direction}`);
         currentIndex++;
 
-        // re-z-index remaining cards
         cards.forEach((c, i) => {
           if (i >= currentIndex) {
             c.style.zIndex = cards.length - i;
@@ -564,7 +574,8 @@
           hint.classList.add('hidden');
         }
       } else {
-        // snap back
+        // — short drag: snap back —
+        dragCard.style.transition = '';
         const isFlipped = dragCard.classList.contains('flipped');
         if (isFlipped) {
           dragCard.style.transform = 'rotateY(180deg)';
@@ -578,8 +589,6 @@
     }
 
     // --- reset ---
-    const resetBtn = document.getElementById('resetBtn');
-
     resetBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       done.classList.remove('visible');
@@ -600,7 +609,7 @@
     document.addEventListener('mouseup', onPointerUp);
 
     // touch events
-    document.addEventListener('touchstart', onPointerDown, { passive: false });
+    document.addEventListener('touchstart', onPointerDown, { passive: true });
     document.addEventListener('touchmove', onPointerMove, { passive: false });
     document.addEventListener('touchend', onPointerUp);
   </script>
