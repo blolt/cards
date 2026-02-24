@@ -513,6 +513,7 @@
     }
 
     function onPointerDown(e) {
+      if (e.target.closest('.reset-btn')) return;
       const card = getTopCard();
       if (!card) return;
       dragging = true;
@@ -548,6 +549,7 @@
 
       if (Math.abs(dx) > threshold) {
         const direction = dx > 0 ? 'right' : 'left';
+        dragCard.style.transform = '';
         dragCard.classList.add('swiped', `swiped-${direction}`);
         currentIndex++;
 
@@ -579,11 +581,18 @@
 
     resetBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+
+      // clear any in-progress drag
+      dragging = false;
+      dragCard = null;
+      dx = 0;
+
       done.classList.remove('visible');
       hint.classList.remove('hidden');
       currentIndex = 0;
 
       cards.forEach((card) => {
+        delete card.dataset.swiping;
         card.classList.remove('flipped', 'swiped', 'swiped-left', 'swiped-right');
         card.style.transform = '';
         card.style.transition = '';
